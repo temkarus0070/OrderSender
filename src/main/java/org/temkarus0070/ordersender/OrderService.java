@@ -1,0 +1,45 @@
+package org.temkarus0070.ordersender;
+
+
+import org.apache.kafka.clients.producer.KafkaProducer;
+import org.apache.kafka.clients.producer.ProducerConfig;
+import org.apache.kafka.clients.producer.ProducerRecord;
+import org.apache.kafka.common.serialization.LongSerializer;
+import org.apache.kafka.common.serialization.StringSerializer;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.stereotype.Component;
+import org.temkarus0070.models.Order;
+
+import javax.annotation.PostConstruct;
+import java.util.Properties;
+
+@Component
+public class OrderService {
+    @Value("${spring.kafka.bootstrap-servers}")
+    private String kafkaServer;
+
+    @Value("${spring.kafka.template.default-topic}")
+    private String topicName;
+
+    private KafkaProducer<Long,Order>kafkaProducer;
+    public OrderService(){
+
+    }
+
+    @PostConstruct
+    public void init(){
+        Properties properties=new Properties();
+        properties.setProperty(ProducerConfig.BOOTSTRAP_SERVERS_CONFIG,kafkaServer);
+        properties.setProperty(ProducerConfig.CLIENT_ID_CONFIG,"orderSenderService");
+        properties.setProperty(ProducerConfig.KEY_SERIALIZER_CLASS_CONFIG, LongSerializer.class.getName());
+        properties.setProperty(ProducerConfig.VALUE_SERIALIZER_CLASS_CONFIG, StringSerializer.class.getName());
+        kafkaProducer=new KafkaProducer<>(properties);
+    }
+
+
+    public void sendToQueue(Order order){
+        ProducerRecord<Long,Order> producerRecord=new ProducerRecord<>(topicName,order.getOrderNum(),order);
+
+        kafkaProducer.send(producerRecord);
+    }
+}
