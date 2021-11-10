@@ -29,8 +29,6 @@ public class OrderService {
     @Value("${spring.kafka.template.default-topic}")
     private String topicName;
 
-    @Value("${order.delay}")
-    private int delay;
 
     private KafkaProducer<Long,Order>kafkaProducer;
     public OrderService(){}
