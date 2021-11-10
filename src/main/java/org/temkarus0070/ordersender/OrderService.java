@@ -7,6 +7,7 @@ import org.apache.kafka.clients.producer.ProducerRecord;
 import org.apache.kafka.common.serialization.LongSerializer;
 import org.apache.kafka.common.serialization.StringSerializer;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.kafka.support.serializer.JsonSerializer;
 import org.springframework.stereotype.Component;
 import org.temkarus0070.models.Order;
 
@@ -32,14 +33,14 @@ public class OrderService {
         properties.setProperty(ProducerConfig.BOOTSTRAP_SERVERS_CONFIG,kafkaServer);
         properties.setProperty(ProducerConfig.CLIENT_ID_CONFIG,"orderSenderService");
         properties.setProperty(ProducerConfig.KEY_SERIALIZER_CLASS_CONFIG, LongSerializer.class.getName());
-        properties.setProperty(ProducerConfig.VALUE_SERIALIZER_CLASS_CONFIG, StringSerializer.class.getName());
+        properties.setProperty(ProducerConfig.VALUE_SERIALIZER_CLASS_CONFIG, JsonSerializer.class.getName());
+        properties.put("serializer.class", "kafka.serializer.DefaultEncoder");
         kafkaProducer=new KafkaProducer<>(properties);
     }
 
 
     public void sendToQueue(Order order){
         ProducerRecord<Long,Order> producerRecord=new ProducerRecord<>(topicName,order.getOrderNum(),order);
-
         kafkaProducer.send(producerRecord);
     }
 }

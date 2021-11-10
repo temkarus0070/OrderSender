@@ -1,6 +1,8 @@
 package org.temkarus0070.models;
 
-public enum Status {
+import java.io.Serializable;
+
+public enum Status implements Serializable {
      NEW,
     PENDING,
     PURCHASED,
