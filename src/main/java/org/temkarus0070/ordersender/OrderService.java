@@ -16,6 +16,7 @@ import org.temkarus0070.models.Order;
 
 import javax.annotation.PostConstruct;
 import java.util.Properties;
+import java.util.logging.Logger;
 
 @Component
 public class OrderService {
@@ -55,8 +56,6 @@ public class OrderService {
 
     public void sendToQueue(Order order){
         ProducerRecord<Long,Order> producerRecord=new ProducerRecord<>(topicName,order.getOrderNum(),order);
-        if(kafkaProducer.send(producerRecord).isDone()){
-            System.out.println("done");
-        }
+        kafkaProducer.send(producerRecord);
     }
 }
