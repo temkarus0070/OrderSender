@@ -51,7 +51,7 @@ public class OrderService {
     @Scheduled(fixedDelayString = "${order.delay}")
     public void getOrder() {
         RestTemplate restTemplate = new RestTemplate();
-        ResponseEntity<Order> order = restTemplate.getForEntity(orderGeneratorServer + "/order/generate", Order.class);
+        ResponseEntity<Order> order = restTemplate.getForEntity(orderGeneratorServer + "/generate", Order.class);
         sendToQueue(order.getBody());
     }
 
