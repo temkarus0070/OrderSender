@@ -11,6 +11,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.kafka.support.serializer.JsonSerializer;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
+import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
 import org.temkarus0070.models.Order;
 
@@ -18,7 +19,7 @@ import javax.annotation.PostConstruct;
 import java.util.Properties;
 import java.util.logging.Logger;
 
-@Component
+@Service
 public class OrderService {
     @Value("${spring.kafka.bootstrap-servers}")
     private String kafkaServer;
@@ -30,30 +31,33 @@ public class OrderService {
     private String topicName;
 
 
-    private KafkaProducer<Long,Order>kafkaProducer;
-    public OrderService(){}
+    private KafkaProducer<Long, Order> kafkaProducer;
+
+    public OrderService() {
+    }
 
     @PostConstruct
-    public void init(){
-        Properties properties=new Properties();
-        properties.setProperty(ProducerConfig.BOOTSTRAP_SERVERS_CONFIG,kafkaServer);
-        properties.setProperty(ProducerConfig.CLIENT_ID_CONFIG,"orderSenderService");
+    public void init() {
+        Properties properties = new Properties();
+        properties.setProperty(ProducerConfig.BOOTSTRAP_SERVERS_CONFIG, kafkaServer);
+        properties.setProperty(ProducerConfig.CLIENT_ID_CONFIG, "orderSenderService");
         properties.setProperty(ProducerConfig.KEY_SERIALIZER_CLASS_CONFIG, LongSerializer.class.getName());
         properties.setProperty(ProducerConfig.VALUE_SERIALIZER_CLASS_CONFIG, JsonSerializer.class.getName());
+        properties.setProperty(JsonSerializer.ADD_TYPE_INFO_HEADERS, String.valueOf(false));
         properties.put("serializer.class", "kafka.serializer.DefaultEncoder");
-        kafkaProducer=new KafkaProducer<>(properties);
+        kafkaProducer = new KafkaProducer<>(properties);
     }
 
     @Scheduled(fixedDelayString = "${order.delay}")
-    public void getOrder(){
-        RestTemplate restTemplate=new RestTemplate();
-        ResponseEntity<Order> order=restTemplate.getForEntity(orderGeneratorServer+"/generateOrder",Order.class);
+    public void getOrder() {
+        RestTemplate restTemplate = new RestTemplate();
+        ResponseEntity<Order> order = restTemplate.getForEntity(orderGeneratorServer + "/order/generate", Order.class);
         sendToQueue(order.getBody());
     }
 
 
-    public void sendToQueue(Order order){
-        ProducerRecord<Long,Order> producerRecord=new ProducerRecord<>(topicName,order.getOrderNum(),order);
+    public void sendToQueue(Order order) {
+        ProducerRecord<Long, Order> producerRecord = new ProducerRecord<>(topicName, order.getOrderNum(), order);
         kafkaProducer.send(producerRecord);
     }
 }
