@@ -14,6 +14,7 @@ import org.springframework.stereotype.Component;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
 import org.temkarus0070.models.Order;
+import org.temkarus0070.models.Status;
 
 import javax.annotation.PostConstruct;
 import java.util.Properties;
@@ -57,6 +58,7 @@ public class OrderService {
 
 
     public void sendToQueue(Order order) {
+        order.setStatus(Status.NEW);
         ProducerRecord<Long, Order> producerRecord = new ProducerRecord<>(topicName, order.getOrderNum(), order);
         kafkaProducer.send(producerRecord);
     }
