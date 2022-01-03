@@ -34,8 +34,20 @@ public class OrderService {
     private String topicName;
 
 
-    @Autowired
+
     private KafkaTemplate<Long, Order> kafkaProducer;
+
+    private RestTemplate restTemplate;
+
+    @Autowired
+    public void setRestTemplate(RestTemplate restTemplate) {
+        this.restTemplate = restTemplate;
+    }
+
+    @Autowired
+    public void setKafkaProducer(KafkaTemplate<Long, Order> kafkaProducer) {
+        this.kafkaProducer = kafkaProducer;
+    }
 
     public OrderService() {
     }
@@ -46,7 +58,6 @@ public class OrderService {
 
     @Scheduled(fixedDelayString = "${order.delay}")
     public void getOrder() {
-        RestTemplate restTemplate = new RestTemplate();
         ResponseEntity<Order> order = restTemplate.getForEntity(orderGeneratorServer + "/generate", Order.class);
         sendToQueue(order.getBody());
     }
