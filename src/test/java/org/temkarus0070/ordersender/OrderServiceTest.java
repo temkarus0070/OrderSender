@@ -73,10 +73,10 @@ public class OrderServiceTest {
         ArrayList<Order> orders=new ArrayList<>();
         Order order=new Order("pupkin",111l,new ArrayList<>(), Status.NEW);
         Mockito.when(restTemplate.getForEntity(orderGeneratorServer + "/generate", Order.class)).thenReturn(new ResponseEntity<Order>(order, HttpStatus.OK));
-        Mockito.when(kafkaProducer.send(new ProducerRecord<Long,Order>("orders",order.getOrderNum(),order))).then(new Answer<Object>() {
+        Mockito.when(kafkaProducer.send(new ProducerRecord<>("orders", order.getOrderNum(), order))).then(new Answer<>() {
             @Override
             public Object answer(InvocationOnMock invocationOnMock) throws Throwable {
-                final ProducerRecord<Long,Order> argument = invocationOnMock.getArgument(0, ProducerRecord.class);
+                final ProducerRecord<Long, Order> argument = invocationOnMock.getArgument(0, ProducerRecord.class);
                 orders.add(argument.value());
                 return null;
             }
@@ -86,7 +86,7 @@ public class OrderServiceTest {
         ;
         orderService.getOrder();
 
-        Assertions.assertTrue(orders.size()==1);
+        Assertions.assertEquals(1, orders.size());
         Assertions.assertEquals(orders.get(0),order);
     }
 }
