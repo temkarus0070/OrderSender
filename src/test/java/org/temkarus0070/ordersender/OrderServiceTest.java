@@ -87,5 +87,6 @@ public class OrderServiceTest {
         orderService.getOrder();
 
         Assertions.assertTrue(orders.size()==1);
+        Assertions.assertEquals(orders.get(0),order);
     }
 }
