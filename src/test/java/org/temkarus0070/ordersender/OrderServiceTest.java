@@ -37,10 +37,7 @@ import org.temkarus0070.models.Order;
 import org.temkarus0070.models.Status;
 
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.Map;
+import java.util.*;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.TimeUnit;
@@ -53,7 +50,7 @@ import static org.springframework.kafka.test.hamcrest.KafkaMatchers.*;
 @SpringBootTest
 @ExtendWith(SpringExtension.class)
 @EmbeddedKafka(topics = "orders",
-        bootstrapServersProperty = "spring.kafka.bootstrap-servers")
+        bootstrapServersProperty = "spring.kafka.bootstrap-servers",partitions = 1)
 public class OrderServiceTest {
 
     @Autowired
@@ -77,6 +74,9 @@ public class OrderServiceTest {
         Map<String, Object> consumerProperties =
                 KafkaTestUtils.consumerProps("sender", "false",
                         embeddedKafka);
+        consumerProperties.put(ConsumerConfig.KEY_DESERIALIZER_CLASS_CONFIG,LongDeserializer.class.getName());
+        consumerProperties.put(ConsumerConfig.VALUE_DESERIALIZER_CLASS_CONFIG,JsonDeserializer.class.getName());
+        consumerProperties.put("spring.json.value.default.type",Order.class.getName());
 
         // create a Kafka consumer factory
         DefaultKafkaConsumerFactory<Long, Order>consumerFactory =
@@ -86,6 +86,7 @@ public class OrderServiceTest {
         // set the topic that needs to be consumed
         ContainerProperties containerProperties =
                 new ContainerProperties(SENDER_TOPIC);
+
 
         // create a Kafka MessageListenerContainer
         container = new KafkaMessageListenerContainer<>(consumerFactory,
@@ -121,14 +122,12 @@ public class OrderServiceTest {
 
     @Test
     public void testSend() throws InterruptedException {
-        Order order=new Order();
+        Random random=new Random(new Date().getTime());
+        Order order=new Order("pupkin",random.nextLong(),new ArrayList<>(),Status.NEW);
         orderService.sendToQueue(order);
-
-        // check that the message was received
         ConsumerRecord<Long, Order> received =
                 records.poll(10000, TimeUnit.MILLISECONDS);
-        // Hamcrest Matchers to check the value
-        Assertions.assertTrue(received.value().equals(order));
+        Assertions.assertEquals(received.value(), order);
 
     }
 

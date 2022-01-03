@@ -56,6 +56,5 @@ public class OrderService {
         order.setStatus(Status.NEW);
         ProducerRecord<Long, Order> producerRecord = new ProducerRecord<>(topicName, order.getOrderNum(), order);
         kafkaProducer.send(producerRecord);
-        kafkaProducer.flush();
     }
 }

@@ -6,6 +6,7 @@ import org.apache.kafka.common.serialization.LongDeserializer;
 import org.apache.kafka.common.serialization.LongSerializer;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.kafka.config.ConcurrentKafkaListenerContainerFactory;
 import org.springframework.kafka.core.*;
 import org.springframework.kafka.support.serializer.JsonDeserializer;
 import org.springframework.kafka.support.serializer.JsonSerializer;
@@ -30,25 +31,13 @@ public class OrderServiceConfig {
         return properties;
     }
 
-    @Bean
-    public Map<String, Object> consumerProperties(){
-        HashMap<String,Object> properties = new HashMap<>();
-        properties.put(ConsumerConfig.BOOTSTRAP_SERVERS_CONFIG, bootstrapServers);
-        properties.put(ConsumerConfig.CLIENT_ID_CONFIG, "orderSenderService");
-        properties.put(ConsumerConfig.KEY_DESERIALIZER_CLASS_CONFIG,LongDeserializer.class.getName());
-        properties.put(ConsumerConfig.VALUE_DESERIALIZER_CLASS_CONFIG,JsonDeserializer.class.getName());
-        return properties;
-    }
+
 
     @Bean
     public ProducerFactory<Long, Order> producerFactory() {
         return new DefaultKafkaProducerFactory<>(properties());
     }
 
-    @Bean
-    public ConsumerFactory<Long,Order> consumerFactory(){
-        return new DefaultKafkaConsumerFactory<>(consumerProperties());
-    }
 
     @Bean
     public KafkaTemplate<Long, Order> kafkaTemplate() {
