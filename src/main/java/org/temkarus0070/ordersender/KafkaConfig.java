@@ -16,7 +16,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 @Configuration
-public class OrderServiceConfig {
+public class KafkaConfig {
 
     @org.springframework.beans.factory.annotation.Value("${spring.kafka.bootstrap-servers}")
     private String bootstrapServers;
