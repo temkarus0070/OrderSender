@@ -6,8 +6,11 @@ import org.apache.kafka.clients.producer.ProducerConfig;
 import org.apache.kafka.clients.producer.ProducerRecord;
 import org.apache.kafka.common.serialization.LongSerializer;
 import org.apache.kafka.common.serialization.StringSerializer;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.context.annotation.Bean;
 import org.springframework.http.ResponseEntity;
+import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.kafka.support.serializer.JsonSerializer;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
@@ -22,8 +25,7 @@ import java.util.logging.Logger;
 
 @Service
 public class OrderService {
-    @Value("${spring.kafka.bootstrap-servers}")
-    private String kafkaServer;
+
 
     @Value("${order.server}")
     private String orderGeneratorServer;
@@ -32,22 +34,15 @@ public class OrderService {
     private String topicName;
 
 
-    private KafkaProducer<Long, Order> kafkaProducer;
+    @Autowired
+    private KafkaTemplate<Long, Order> kafkaProducer;
 
     public OrderService() {
     }
 
-    @PostConstruct
-    public void init() {
-        Properties properties = new Properties();
-        properties.setProperty(ProducerConfig.BOOTSTRAP_SERVERS_CONFIG, kafkaServer);
-        properties.setProperty(ProducerConfig.CLIENT_ID_CONFIG, "orderSenderService");
-        properties.setProperty(ProducerConfig.KEY_SERIALIZER_CLASS_CONFIG, LongSerializer.class.getName());
-        properties.setProperty(ProducerConfig.VALUE_SERIALIZER_CLASS_CONFIG, JsonSerializer.class.getName());
-        properties.setProperty(JsonSerializer.ADD_TYPE_INFO_HEADERS, String.valueOf(false));
-        properties.put("serializer.class", "kafka.serializer.DefaultEncoder");
-        kafkaProducer = new KafkaProducer<>(properties);
-    }
+
+
+
 
     @Scheduled(fixedDelayString = "${order.delay}")
     public void getOrder() {
@@ -61,5 +56,6 @@ public class OrderService {
         order.setStatus(Status.NEW);
         ProducerRecord<Long, Order> producerRecord = new ProducerRecord<>(topicName, order.getOrderNum(), order);
         kafkaProducer.send(producerRecord);
+        kafkaProducer.flush();
     }
 }
