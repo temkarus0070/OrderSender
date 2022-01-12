@@ -4,9 +4,8 @@ import lombok.Data;
 
 import java.io.Serializable;
 
-
-public @Data
-class Good implements Serializable {
+@Data
+public class Good implements Serializable {
     private long id;
     private String name;
     private double price;
