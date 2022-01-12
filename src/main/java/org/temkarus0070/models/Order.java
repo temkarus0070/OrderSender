@@ -15,5 +15,4 @@ import java.util.Collection;
      private long orderNum;
      private Collection<Good> goods;
      private Status status;
-
  }

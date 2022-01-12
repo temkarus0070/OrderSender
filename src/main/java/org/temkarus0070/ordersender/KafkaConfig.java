@@ -2,6 +2,7 @@ package org.temkarus0070.ordersender;
 
 import org.apache.kafka.clients.producer.ProducerConfig;
 import org.apache.kafka.common.serialization.LongSerializer;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.kafka.core.DefaultKafkaProducerFactory;
@@ -15,8 +16,7 @@ import java.util.Map;
 
 @Configuration
 public class KafkaConfig {
-
-    @org.springframework.beans.factory.annotation.Value("${spring.kafka.bootstrap-servers}")
+    @Value("${spring.kafka.bootstrap-servers}")
     private String bootstrapServers;
     @Bean
     public Map<String, Object> properties(){
@@ -29,13 +29,10 @@ public class KafkaConfig {
         return properties;
     }
 
-
-
     @Bean
     public ProducerFactory<Long, Order> producerFactory() {
         return new DefaultKafkaProducerFactory<>(properties());
     }
-
 
     @Bean
     public KafkaTemplate<Long, Order> kafkaTemplate() {

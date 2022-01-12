@@ -10,6 +10,7 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.context.annotation.Import;
 import org.springframework.kafka.core.DefaultKafkaConsumerFactory;
 import org.springframework.kafka.listener.ContainerProperties;
 import org.springframework.kafka.listener.KafkaMessageListenerContainer;
@@ -19,6 +20,7 @@ import org.springframework.kafka.test.EmbeddedKafkaBroker;
 import org.springframework.kafka.test.context.EmbeddedKafka;
 import org.springframework.kafka.test.utils.ContainerTestUtils;
 import org.springframework.kafka.test.utils.KafkaTestUtils;
+import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 import org.temkarus0070.models.Order;
 import org.temkarus0070.models.Status;
@@ -35,16 +37,16 @@ import java.util.concurrent.TimeUnit;
 @SpringBootTest
 @ExtendWith(SpringExtension.class)
 @EmbeddedKafka(topics = "orders",
-        bootstrapServersProperty = "spring.kafka.bootstrap-servers",partitions = 1)
+        bootstrapServersProperty = "spring.kafka.bootstrap-servers", partitions = 1)
+@Import(TestConfig.class)
+@DirtiesContext
 public class OrderServiceKafkaIT {
+
 
     @Autowired
     private OrderService orderService;
 
-
     private static String SENDER_TOPIC = "orders";
-
-
 
     private KafkaMessageListenerContainer<Long, Order> container;
 
@@ -71,7 +73,6 @@ public class OrderServiceKafkaIT {
         // set the topic that needs to be consumed
         ContainerProperties containerProperties =
                 new ContainerProperties(SENDER_TOPIC);
-
 
         // create a Kafka MessageListenerContainer
         container = new KafkaMessageListenerContainer<>(consumerFactory,
@@ -117,3 +118,4 @@ public class OrderServiceKafkaIT {
     }
 
 }
+

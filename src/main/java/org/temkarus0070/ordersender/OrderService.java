@@ -14,21 +14,17 @@ import org.temkarus0070.models.Status;
 
 @Service
 public class OrderService {
-
-
     @Value("${order.server}")
     private String orderGeneratorServer;
 
     @Value("${spring.kafka.template.default-topic}")
     private String topicName;
 
-
-
     private KafkaTemplate<Long, Order> kafkaProducer;
 
     private RestTemplate restTemplate;
 
-
+    @Autowired
     public void setRestTemplate(RestTemplate restTemplate) {
         this.restTemplate = restTemplate;
     }
@@ -41,10 +37,6 @@ public class OrderService {
     public OrderService() {
     }
 
-
-
-
-
     @Scheduled(fixedDelayString = "${order.delay}")
     public void getOrder() {
         if (restTemplate == null)
@@ -52,7 +44,6 @@ public class OrderService {
         ResponseEntity<Order> order = restTemplate.getForEntity(orderGeneratorServer + "/generate", Order.class);
         sendToQueue(order.getBody());
     }
-
 
     public void sendToQueue(Order order) {
         order.setStatus(Status.NEW);
