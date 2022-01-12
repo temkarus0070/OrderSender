@@ -26,8 +26,8 @@ public class TestConfig {
     @Primary
     public KafkaTemplate<Long, Order> kafkaTemplateForTest() {
         Map<String, Object> config = KafkaTestUtils.producerProps(embeddedKafka);
-        config.put(ProducerConfig.KEY_SERIALIZER_CLASS_DOC, LongSerializer.class.getName());
-        config.put(ProducerConfig.VALUE_SERIALIZER_CLASS_DOC, JsonSerializer.class.getName());
+        config.put(ProducerConfig.KEY_SERIALIZER_CLASS_CONFIG, LongSerializer.class.getName());
+        config.put(ProducerConfig.VALUE_SERIALIZER_CLASS_CONFIG, JsonSerializer.class.getName());
         config.put("spring.json.value.default.type", Order.class.getName());
         KafkaTemplate<Long, Order> kafkaTemplate = new KafkaTemplate<>(new DefaultKafkaProducerFactory<>(config));
         kafkaTemplate.setDefaultTopic(SENDER_TOPIC);

@@ -16,6 +16,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
+import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.RestTemplate;
 import org.temkarus0070.models.Order;
 import org.temkarus0070.models.Status;
@@ -25,6 +26,7 @@ import java.util.concurrent.TimeUnit;
 
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 
 @ExtendWith(SpringExtension.class)
@@ -36,7 +38,6 @@ public class OrderServiceTest {
 
     @MockBean
     private KafkaTemplate<Long, Order> kafkaProducer;
-
 
     @SpyBean
     private OrderService orderService;
@@ -52,13 +53,11 @@ public class OrderServiceTest {
         Order order = new Order("pupkin", 111l, new ArrayList<>(), Status.NEW);
         Mockito.when(restTemplate.getForEntity(anyString(), any())).thenReturn(new ResponseEntity<>(order, HttpStatus.OK));
         Mockito.when(kafkaProducer.send(new ProducerRecord<>("orders", order.getOrderNum(), order))).then(invocationOnMock -> null);
-        orderService.setRestTemplate(restTemplate);
-        orderService.setKafkaProducer(kafkaProducer);
         int delay = Integer.valueOf(this.delay) * 3;
         Awaitility.await().atMost(delay, TimeUnit.MILLISECONDS)
                 .untilAsserted(() -> {
                     Mockito.when(restTemplate.getForEntity(anyString(), any())).thenReturn(new ResponseEntity<>(order, HttpStatus.OK));
-                    verify(orderService, Mockito.times(2)).getOrder();
+                    verify(orderService, times(2)).getOrder();
                 });
     }
 
@@ -75,5 +74,17 @@ public class OrderServiceTest {
         orderService.getOrder();
         Assertions.assertEquals(1, orders.size());
         Assertions.assertEquals(orders.get(0), order);
+    }
+
+    @Test
+    public void testForSystemCrash() {
+        Order order = new Order("pupkin", 111l, new ArrayList<>(), Status.NEW);
+        Mockito.when(restTemplate.getForEntity(anyString(), any())).thenThrow(new HttpClientErrorException(HttpStatus.BAD_REQUEST));
+        try {
+            orderService.getOrder();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        verify(orderService, times(0)).sendToQueue(order);
     }
 }

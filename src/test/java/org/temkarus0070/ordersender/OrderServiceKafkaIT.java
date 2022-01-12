@@ -36,12 +36,10 @@ import java.util.concurrent.TimeUnit;
 
 @SpringBootTest
 @ExtendWith(SpringExtension.class)
-@EmbeddedKafka(topics = "orders",
-        bootstrapServersProperty = "spring.kafka.bootstrap-servers", partitions = 1)
+@EmbeddedKafka(topics = "orders", bootstrapServersProperty = "spring.kafka.bootstrap-servers", partitions = 1)
 @Import(TestConfig.class)
 @DirtiesContext
 public class OrderServiceKafkaIT {
-
 
     @Autowired
     private OrderService orderService;
@@ -67,7 +65,7 @@ public class OrderServiceKafkaIT {
 
         // create a Kafka consumer factory
         DefaultKafkaConsumerFactory<Long, Order>consumerFactory =
-                new DefaultKafkaConsumerFactory<Long, Order>(
+                new DefaultKafkaConsumerFactory<>(
                         consumerProperties);
 
         // set the topic that needs to be consumed
@@ -83,14 +81,7 @@ public class OrderServiceKafkaIT {
 
         // setup a Kafka message listener
         container
-                .setupMessageListener(new MessageListener<Long, Order>() {
-                    @Override
-                    public void onMessage(
-                            ConsumerRecord<Long, Order> record) {
-
-                        records.add(record);
-                    }
-                });
+                .setupMessageListener((MessageListener<Long, Order>) record -> records.add(record));
 
         // start the container and underlying message listener
         container.start();
@@ -107,13 +98,16 @@ public class OrderServiceKafkaIT {
     }
 
     @Test
-    public void testSend() throws InterruptedException {
-        Random random=new Random(new Date().getTime());
-        Order order=new Order("pupkin",random.nextLong(),new ArrayList<>(),Status.NEW);
+    public void testSendingMessagesToKafka() throws InterruptedException {
+        Random random = new Random(new Date().getTime());
+        Order order = new Order("pupkin", random.nextLong(), new ArrayList<>(), Status.NEW);
         orderService.sendToQueue(order);
         ConsumerRecord<Long, Order> received =
                 records.poll(10000, TimeUnit.MILLISECONDS);
         Assertions.assertEquals(received.value(), order);
+        Assertions.assertNotNull(received.value().getGoods());
+        Assertions.assertNotNull(received.value().getClientFIO());
+        Assertions.assertNotEquals(received.value().getClientFIO(), "");
 
     }
 
