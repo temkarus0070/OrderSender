@@ -82,7 +82,11 @@
             <version>4.1.1</version>
             <scope>test</scope>
         </dependency>
-
+        <dependency>
+            <groupId>io.opentracing.contrib</groupId>
+            <artifactId>opentracing-spring-jaeger-web-starter</artifactId>
+            <version>3.2.2</version>
+        </dependency>
     </dependencies>
 
     <build>
