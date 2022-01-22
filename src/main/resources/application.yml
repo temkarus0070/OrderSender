@@ -1,0 +1,28 @@
+server.port: ${SENDER_SERVER_PORT:8099}
+spring:
+  application.name: OrderSender
+  kafka:
+    bootstrap-servers: ${KAFKA_SERVER:127.0.0.1:9092}
+    template.default-topic: orders
+    properties:
+      spring:
+        json.value.default.type: org.temkarus0070.models.Order
+order:
+  delay: ${ORDER_DELAY:10000}
+  server: ${ORDER_SERVER:http://localhost:9081/order}
+opentracing.jaeger:
+  udp-sender:
+    host: ${JAEGER_HOST:localhost}
+    port: 6831
+  log-spans: true
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: "*"
+  metrics:
+    distribution:
+      percentiles-histogram:
+        "[http.server.requests]": true
+

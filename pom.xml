@@ -12,14 +12,25 @@
     <artifactId>OrderSender</artifactId>
     <version>0.0.1-SNAPSHOT</version>
     <packaging>jar</packaging>
+
     <name>OrderSender</name>
     <description>OrderSender</description>
     <properties>
         <java.version>11</java.version>
         <kafka.version>2.8.1</kafka.version>
-
     </properties>
     <dependencies>
+
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-actuator</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>io.micrometer</groupId>
+            <artifactId>micrometer-registry-prometheus</artifactId>
+        </dependency>
+
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-web</artifactId>
@@ -82,7 +93,11 @@
             <version>4.1.1</version>
             <scope>test</scope>
         </dependency>
-
+        <dependency>
+            <groupId>io.opentracing.contrib</groupId>
+            <artifactId>opentracing-spring-jaeger-web-starter</artifactId>
+            <version>3.2.2</version>
+        </dependency>
     </dependencies>
 
     <build>
